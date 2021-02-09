@@ -1,3 +1,4 @@
+from keep_alive import keep_alive
 import discord
 import os
 from discord.utils import get
@@ -30,4 +31,5 @@ async def on_message(message):
     if message.content.startswith('$hola'):
         await message.channel.send('Hola!')
 
+keep_alive()
 client.run(os.getenv('TOKEN'))
