@@ -6,6 +6,8 @@ from discord.ext import commands
 import sys
 import os
 from os import walk
+from discord.ext import tasks
+from datetime import datetime
 
 # Tomamos la info del archivo config
 config = configparser.ConfigParser()
@@ -49,7 +51,7 @@ client = commands.Bot(command_prefix='!',intents=intents)
 # Simple evento ready para avisar cuando el Bot esta listo
 @client.event
 async def on_ready():
-    print('Iniciado como ' + client.user.name)    
+      print('Iniciado como ' + client.user.name)
 
 # Un Array para poner la info de cada comando
 utilidad = []
@@ -90,11 +92,23 @@ async def on_message(message):
             # Pasando como parametros el mensaje , los argumentos, y la ulilidad
             await comando.run(message, args, utilidad)
 
+#welcome message to new members
 @client.event
 async def on_member_join(member):
     channel = member.guild.get_channel(808624631581376522)
 
     await channel.send(f'Hola <@{member.id}>, ' + newUserMessage)
+
+#scheduled task: display blood bowl ranks every day at 10h
+@tasks.loop(minutes=60.0)
+async def task(self):
+    if datetime.now().hour == 9: 
+      comando = __import__('bbccl')
+      comando2 = __import__('bbranking')
+      channel = client.get_channel(794496254830182400)
+      async for message in channel.history(limit=1):
+        await comando.run(message,[],[]) 
+        await comando2.run(message,[],[]) 
 
 keep_alive()
 client.run(os.getenv('TOKEN'))
