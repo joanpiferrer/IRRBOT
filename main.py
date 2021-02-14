@@ -5,6 +5,7 @@ import discord
 import requests 
 from discord.ext import commands
 import sys
+import os
 from os import walk
 import json
 
@@ -126,5 +127,5 @@ async def on_member_join(member):
     await channel.send(f'Hola <@{member.id}>, ' + newUserMessage)
 
 keep_alive()
-client.run(config['MAIN']['TOKEN'])
+client.run(os.getenv('TOKEN'))
 
