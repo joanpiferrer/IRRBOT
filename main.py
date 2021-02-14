@@ -2,12 +2,10 @@
 from keep_alive import keep_alive
 import configparser
 import discord
-import requests 
 from discord.ext import commands
 import sys
 import os
 from os import walk
-import json
 
 # Tomamos la info del archivo config
 config = configparser.ConfigParser()
@@ -18,9 +16,6 @@ Benvingut al canal de discord d'Irregulars de PlanB!
 Si no ets soci i necessites preguntar qualsevol cosa, pots comunicar-te mitjançant aquest xat de text.
 Si ja ets soci comunica-ho a <@247677555170082816> i et donarem permisos perquè puguis accedir a la resta de canals.
 """
-columnsAccepted = [3,4,5,6,7,8,16,18,19,22,23,27]
-
-URL = "https://www.mordrek.com:666/api/v1/queries?req=%7B%22compStandings%22%3A%7B%22id%22%3A%22compStandings%22%2C%22idmap%22%3A%7B%22idcompetition%22%3A%2216941%22%7D%2C%22filters%22%3A%7B%22team_name%22%3A%22IRRB%22%7D%2C%22ordercol%22%3A%22sorting%22%2C%22order%22%3A%22desc%22%2C%22limit%22%3A300%2C%22from%22%3A0%2C%22group%22%3Anull%2C%22aggr%22%3Anull%7D%7D"
 
 if not 'MAIN' in config:
     raise ValueError('No se encontro la secccion MAIN en el archivo config')
@@ -54,32 +49,7 @@ client = commands.Bot(command_prefix='!',intents=intents)
 # Simple evento ready para avisar cuando el Bot esta listo
 @client.event
 async def on_ready():
-    print('Iniciado como ' + client.user.name)
-    response = requests.get(url = URL) 
-    # extracting data in json format 
-    data = json.loads(response.text)
-    # extracting latitude, longitude and formatted address  
-    # of the first matching location 
-    message = ''
-    user = await client.fetch_user(247677555170082816)
-    for idx, val in enumerate(data['response']['compStandings']['result']['cols']):
-      if idx in columnsAccepted:
-        message = message + f"{str(val):15}"
-      #message = message +  idx
-    await user.send('```' + message + '```') 
-    message = ''
-    for idx, val in enumerate(data['response']['compStandings']['result']['rows']):
-      message = ''
-      print(val)
-      for idx2,val2 in enumerate(val):
-        if idx2 in columnsAccepted:
-          message = message + f"{str(val2):15}"
-      await user.send('```' + message + '```')
-    
-    
-    
-    #message = message + '```'
-    # printing the output 
+    print('Iniciado como ' + client.user.name)    
 
 # Un Array para poner la info de cada comando
 utilidad = []

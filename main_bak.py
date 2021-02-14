@@ -15,7 +15,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_member_join(member):
-    channel = member.guild.get_channel(808624631581376522)
+    user = await client.fetch_user(247677555170082816)
 
     await channel.send(f'Hola <@{member.id}>, ' + newUserMessage)
 
