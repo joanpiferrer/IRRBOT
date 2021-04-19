@@ -8,6 +8,7 @@ import os
 from os import walk
 from discord.ext import tasks
 from datetime import datetime
+from utilities import get_upcoming_events
 
 # Tomamos la info del archivo config
 config = configparser.ConfigParser()
@@ -52,13 +53,17 @@ client = commands.Bot(command_prefix='!',intents=intents)
 @client.event
 async def on_ready():
       print('Iniciado como ' + client.user.name)
-
+      #message = get_upcoming_events()
+      #user = await client.fetch_user#(247677555170082816)
+      #await user.send(message)
+      #test = 1
+      await task.start()
 # Un Array para poner la info de cada comando
 utilidad = []
 
 # Parecido a lo que hicimos arriba, pero esta vez guardaremos el objeto que creamos en cada comando en un array (Para luego usarlo)
 for (dirpath, dirnames, filenames) in walk('./commands'):
-    for x in filenames:
+    for x in sorted(filenames):
         if not x[-3:] == '.py':
             break
         util = __import__(x[:-3])
@@ -95,20 +100,31 @@ async def on_message(message):
 #welcome message to new members
 @client.event
 async def on_member_join(member):
-    channel = member.guild.get_channel(808624631581376522)
+    channel = member.guild.get_channel(int(config['MAIN']['PUBLIC_CHANNEL']))
 
     await channel.send(f'Hola <@{member.id}>, ' + newUserMessage)
 
 #scheduled task: display blood bowl ranks every day at 10h
-@tasks.loop(minutes=60.0)
-async def task(self):
-    if datetime.now().hour == 9: 
+@tasks.loop(minutes=60)
+async def task(self=None):
+    print('Checking scheduled tasks...' + str(datetime.now().hour))
+    if datetime.now().hour == 8: 
+      print('It\'s the time!')
+      #blood-bowl channel tasks
       comando = __import__('bbccl')
       comando2 = __import__('bbranking')
-      channel = client.get_channel(794496254830182400)
-      async for message in channel.history(limit=1):
+      channel = client.get_channel(int(config['MAIN']['BLOODBOWL_CHANNEL']))
+      channel2 = client.get_channel(int(config['MAIN']['BLOODBOWL_CCL_CHANNEL']))
+      async for message in channel2.history(limit=1):
         await comando.run(message,[],[]) 
+      async for message in channel.history(limit=1):
         await comando2.run(message,[],[]) 
+      #reserves channel tasks
+      comando3 = __import__('reserves')
+      message = client.get_channel(int(config['MAIN']['CALENDAR_CHANNEL']))
+      await message.purge(limit=1000)
+      await comando3.run(message,[],[])
+
 
 keep_alive()
 client.run(os.getenv('TOKEN'))

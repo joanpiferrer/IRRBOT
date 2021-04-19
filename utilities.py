@@ -24,8 +24,13 @@ def make_markdown_table(var):
 
     return markdown + "```"
 
-def get_mordrek_ranking(idCompetition,filter):
-  URL = "https://www.mordrek.com:666/api/v1/queries?req=%7B%22compStandings%22%3A%7B%22id%22%3A%22compStandings%22%2C%22idmap%22%3A%7B%22idcompetition%22%3A%22"+idCompetition+"%22%7D%2C%22filters%22%3A%7B%22team_name%22%3A%22"+filter+"%22%7D%2C%22ordercol%22%3A%22sorting%22%2C%22order%22%3A%22desc%22%2C%22limit%22%3A300%2C%22from%22%3A0%2C%22group%22%3Anull%2C%22aggr%22%3Anull%7D%7D"
+def get_mordrek_ranking(idCompetition,filter,pointscol=2):
+  if pointscol==3:
+    ordercol='points'
+  else:
+    ordercol='sorting'
+
+  URL = "https://www.mordrek.com:666/api/v1/queries?req=%7B%22compStandings%22%3A%7B%22id%22%3A%22compStandings%22%2C%22idmap%22%3A%7B%22idcompetition%22%3A%22"+idCompetition+"%22%7D%2C%22filters%22%3A%7B%22team_name%22%3A%22"+filter+"%22%7D%2C%22" + ordercol + "%22%3A%22sorting%22%2C%22order%22%3A%22desc%22%2C%22limit%22%3A300%2C%22from%22%3A0%2C%22group%22%3Anull%2C%22aggr%22%3Anull%7D%7D"
 
   RACES: [str] = [
         "INDEX0",
@@ -65,7 +70,33 @@ def get_mordrek_ranking(idCompetition,filter):
 
   rankingccl = ''
   for val in data['response']['compStandings']['result']['rows']:
-    rankingccl = rankingccl + f"{val[2]:10}{val[6]+'-'+val[7]+'-'+val[8]:10}{val[19]:10}{val[22]:25}{RACES[int(val[21])]:20}{val[27]:30}\n"
+    rankingccl = rankingccl + f"{val[pointscol]:10}{val[6]+'-'+val[7]+'-'+val[8]:10}{val[19]:10}{val[22]:25}{RACES[int(val[21])]:20}{val[27]:30}\n"
   
 
   return '```' + headers + rankingccl + '```'
+
+def get_upcoming_events():
+  URL = "https://www.irregularesplanb.com/?option=com_bookatable&task=dashboard.getBookings"
+
+  FRANJES: [str] = [
+        "INDEX0",
+        "Matí",
+        "Tarda",
+        "Nit",
+        "Tot el día"
+    ]
+
+  response = requests.get(url = URL) 
+  # extracting data in json format 
+  data = json.loads(response.text)
+  #810897755165163550
+  #user = await client.fetch_user(247677555170082816)
+  #headers = f"{'Punts':10}{'Record':10}{'Partides':10}{'Nom Equip':25}{'Raça':20}{'Entrenador':30}\n"
+  message = ''
+  if data:
+    for val in data['bookings']:
+      message = message + '```' + f"dia: {val['date']:10}\ntaula: {val['table_name']:20}\nhorari: {FRANJES[int(val['evening'])]}\njoc: {val['game']:25}\n" + '```'
+    
+  if message == '':
+    return 'No hi ha pròxims esdeveniments a la vista'
+  return 'Pròxims esdeveniments al local:' + message
